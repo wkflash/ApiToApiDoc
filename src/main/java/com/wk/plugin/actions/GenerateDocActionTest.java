@@ -31,6 +31,9 @@ public class GenerateDocActionTest extends AnAction {
         }*/
         WordExportFromTemplates.exportToWord(apiInterface, "服务设计文档.docx");
 
+        //弹窗
+        Messages.showMessageDialog("文档生成成功！", "提示", Messages.getInformationIcon());
+
     }
 
     @Override
