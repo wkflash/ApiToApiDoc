@@ -2,16 +2,44 @@ package com.wk.plugin.apitoapidoc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
+/**
+ * 接口入参实体类
+ */
 public class ApiParameter {
-    private String name; // 参数英文名
-    private String descriptionCn; // 参数中文名
-    private String type; // 参数类型（如 String, Integer, List<Object>）
-    private Integer length; // 参数长度
-    private boolean required; // 是否必填
-    private String version; // 所属版本
-    private String description; // 描述
-    private List<ApiParameter> subParameters = new ArrayList<>(); // 嵌套子参数（用于复杂结构）
+    /**
+     * 参数英文名
+     */
+    private String name;
+    /**
+     * 参数中文名
+     */
+    private String cnName;
+    /**
+     * 参数类型
+     */
+    private String type;
+    /**
+     * 参数长度
+     */
+    private Integer length;
+    /**
+     * 是否必填
+     */
+    private boolean required;
+    /**
+     * 所属版本
+     */
+    private String version;
+    /**
+     * 描述
+     */
+    private String description;
+    /**
+     * 嵌套子参数（用于复杂结构）
+     */
+    private List<ApiParameter> subParameters = new ArrayList<>();
 
     // Getters and Setters
     public String getName() {
@@ -22,12 +50,12 @@ public class ApiParameter {
         this.name = name;
     }
 
-    public String getDescriptionCn() {
-        return descriptionCn;
+    public String getCnName() {
+        return cnName;
     }
 
-    public void setDescriptionCn(String descriptionCn) {
-        this.descriptionCn = descriptionCn;
+    public void setCnName(String cnName) {
+        this.cnName = cnName;
     }
 
     public String getType() {
@@ -80,15 +108,15 @@ public class ApiParameter {
 
     @Override
     public String toString() {
-        return "ApiParameter{" +
-                "name='" + name + '\'' +
-                ", descriptionCn='" + descriptionCn + '\'' +
-                ", type='" + type + '\'' +
-                ", length=" + length +
-                ", required=" + required +
-                ", version='" + version + '\'' +
-                ", description='" + description + '\'' +
-                ", subParameters=" + subParameters +
-                '}';
+        return new StringJoiner(", ", ApiParameter.class.getSimpleName() + "[", "]")
+                .add("name='" + name + "'")
+                .add("cnName='" + cnName + "'")
+                .add("type='" + type + "'")
+                .add("length=" + length)
+                .add("required=" + required)
+                .add("version='" + version + "'")
+                .add("description='" + description + "'")
+                .add("subParameters=" + subParameters)
+                .toString();
     }
 }

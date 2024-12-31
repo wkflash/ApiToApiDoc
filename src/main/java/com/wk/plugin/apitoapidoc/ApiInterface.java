@@ -3,15 +3,35 @@ package com.wk.plugin.apitoapidoc;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 单个接口文档信息
+ */
 public class ApiInterface {
-    private String name; // 接口名称
-    private String description; // 接口描述
-    private String httpMethod; // 请求方式
-    private String contentType = "application/json"; // 报文格式
-    private List<ApiParameter> parameters = new ArrayList<>(); // 入参列表
-    private List<ApiField> returnFields = new ArrayList<>(); // 出参列表
+    /**
+     * 接口名称
+     */
+    private String name;
+    /**
+     * 接口描述
+     */
+    private String description;
+    /**
+     * 请求方式
+     */
+    private String httpMethod;
+    /**
+     * 报文格式
+     */
+    private String contentType = "application/json";
+    /**
+     * 入参
+     */
+    private List<ApiParameter> parameters = new ArrayList<>();
+    /**
+     * 出参
+     */
+    private List<ApiField> returnFields = new ArrayList<>();
 
-    // Getters and Setters
     public String getName() {
         return name;
     }

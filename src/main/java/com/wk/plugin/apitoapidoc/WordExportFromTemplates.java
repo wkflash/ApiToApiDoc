@@ -104,20 +104,20 @@ public class WordExportFromTemplates {
 
     private static void returnFieldAddCell(ApiField returnField, XWPFTableRow newRow) {
         newRow.getCell(1).setText(returnField.getName());
-        newRow.getCell(2).setText(returnField.getDescription());
+        newRow.getCell(2).setText(returnField.getCnName());
         newRow.getCell(3).setText(returnField.getType());
         newRow.getCell(4).setText("");
-        newRow.getCell(5).setText("");
+        newRow.getCell(5).setText(returnField.getDescription());
     }
 
     private static void parameterAddCell(ApiParameter parameter, XWPFTable xwpfTable) {
         XWPFTableRow newRow = xwpfTable.createRow(); // 创建新行
         newRow.getCell(1).setText(parameter.getName());
-        newRow.getCell(2).setText(parameter.getDescription());
+        newRow.getCell(2).setText(parameter.getCnName());
         newRow.getCell(3).setText(parameter.getType());
         newRow.getCell(4).setText("0");
         newRow.getCell(5).setText(parameter.isRequired()?"是":"否");
         newRow.getCell(6).setText("");
-        newRow.getCell(7).setText(parameter.getDescription());
+        newRow.getCell(7).setText("");
     }
 }

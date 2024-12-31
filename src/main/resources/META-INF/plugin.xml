@@ -8,14 +8,14 @@
     <name>ApiToApiDoc</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="wangkunoffice@aliyun.com" url="https://github.com/wkflash/ApiToAPiDoc">wkflash</vendor>
+    <vendor email="wangkunoffice@aliyun.com" url="https://github.com/wkflash/ApiToAPiDoc">WangKun</vendor>
 
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
     将接口转换成接口文档，快速生成接口文档，减少接口文档编写时间，减少接口文档维护时间。<br>
-    <em>将接口转换成接口文档，快速生成接口文档，减少接口文档编写时间，减少接口文档维护时间。</em>
+    <em>Convert interfaces into interface documents, quickly generate interface documents, reduce the time for writing interface documents, and reduce the time for maintaining interface documents</em>
   ]]></description>
 
     <!-- Product and plugin compatibility requirements.

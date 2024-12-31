@@ -13,7 +13,7 @@ import java.util.List;
 public class InterfaceParser {
 
 
-    public static  ApiInterface parseMethod(PsiClass containingClass, PsiMethod method) {
+    public static ApiInterface parseMethod(PsiClass containingClass, PsiMethod method) {
 
         // 获取类上的路径
         String classPath = getRequestMappingPath(containingClass.getModifierList());
@@ -27,10 +27,11 @@ public class InterfaceParser {
         apiInterface.setDescription(getMethodDescription(method));
         apiInterface.setHttpMethod(getHttpMethod(method));
         apiInterface.setParameters(parseParameters(method));
-       apiInterface.setReturnFields(parseReturnType(method.getReturnType()));
+        apiInterface.setReturnFields(parseReturnType(method.getReturnType()));
 
         return apiInterface;
     }
+
     private static String getRequestMappingPath(PsiModifierList modifierList) {
         if (modifierList == null) {
             return "";
@@ -54,6 +55,7 @@ public class InterfaceParser {
 
         return "";
     }
+
     private static String getHttpMethod(PsiMethod method) {
         PsiModifierList modifierList = method.getModifierList();
         if (modifierList == null) {
@@ -100,6 +102,7 @@ public class InterfaceParser {
         // 默认返回 UNKNOWN
         return "UNKNOWN";
     }
+
     private static String combinePaths(String classPath, String methodPath) {
         // 确保路径的格式正确
         if (classPath.endsWith("/")) {
@@ -110,48 +113,10 @@ public class InterfaceParser {
         }
         return classPath + methodPath;
     }
-    public static  String getAnnotationValue(PsiAnnotation annotation, String attribute) {
+
+    public static String getAnnotationValue(PsiAnnotation annotation, String attribute) {
         PsiAnnotationMemberValue value = annotation.findAttributeValue(attribute);
         return value != null ? value.getText().replace("\"", "") : "";
-    }
-
-    public static  String getHttpMethod(PsiAnnotation annotation) {
-        // 获取注解的全限定名
-        String qualifiedName = annotation.getQualifiedName();
-        if (qualifiedName == null) {
-            return "UNKNOWN";
-        }
-
-        // 根据注解类型判断 HTTP 方法
-        switch (qualifiedName) {
-            case "org.springframework.web.bind.annotation.GetMapping":
-                return "GET";
-            case "org.springframework.web.bind.annotation.PostMapping":
-                return "POST";
-            case "org.springframework.web.bind.annotation.PutMapping":
-                return "PUT";
-            case "org.springframework.web.bind.annotation.DeleteMapping":
-                return "DELETE";
-            case "org.springframework.web.bind.annotation.RequestMapping":
-                // 如果是 @RequestMapping，需要进一步解析 method 属性
-                PsiAnnotationMemberValue methodValue = annotation.findAttributeValue("method");
-                if (methodValue != null) {
-                    String methodText = methodValue.getText().replace("\"", "");
-                    // 处理多种请求方式的情况
-                    if (methodText.contains("RequestMethod.GET")) {
-                        return "GET";
-                    } else if (methodText.contains("RequestMethod.POST")) {
-                        return "POST";
-                    } else if (methodText.contains("RequestMethod.PUT")) {
-                        return "PUT";
-                    } else if (methodText.contains("RequestMethod.DELETE")) {
-                        return "DELETE";
-                    }
-                }
-                return "UNKNOWN";
-            default:
-                return "UNKNOWN";
-        }
     }
 
     private static List<ApiField> parseReturnType(PsiType returnType) {
@@ -163,11 +128,11 @@ public class InterfaceParser {
         // 判断返回类型
         if (returnType instanceof PsiPrimitiveType) {
             // 基本类型
-            fields.add(createField("value",returnType.getCanonicalText(), "基本类型", ""));
+            fields.add(createField("value","", returnType.getCanonicalText(), "基本类型", ""));
         } else if (returnType instanceof PsiArrayType) {
             // 数组类型
             PsiArrayType arrayType = (PsiArrayType) returnType;
-            fields.add(createField("array", arrayType.getComponentType().getCanonicalText() + "[]", "数组类型", ""));
+            fields.add(createField("array", "",arrayType.getComponentType().getCanonicalText() + "[]", "数组类型", ""));
         } else if (returnType instanceof PsiClassType) {
             // 类类型或泛型类型
             PsiClassType classType = (PsiClassType) returnType;
@@ -198,13 +163,15 @@ public class InterfaceParser {
             }
             fields.add(createField(
                     field.getName(),
+                    getFieldDescription(field),// 假设从注释或注解中提取字段中文名
                     field.getType().getCanonicalText(),
-                    getFieldDescription(field), // 假设从注释或注解中提取字段描述
+                    "",
                     ""
             ));
         }
         return fields;
     }
+
     private static String getMethodDescription(PsiMethod method) {
 
         // 2. 尝试从 JavaDoc 中获取方法描述
@@ -214,8 +181,9 @@ public class InterfaceParser {
         }
 
         // 3. 如果没有找到描述，则返回默认值
-        return "无描述";
+        return "";
     }
+
     private static String getFieldDescription(PsiField field) {
         // 尝试从 JavaDoc 中获取字段描述
         String javadocDescription = getJavaDocComment(field);
@@ -225,6 +193,7 @@ public class InterfaceParser {
 
         return "";
     }
+
     private static String getMethodJavaDocComment(PsiMethod method) {
         PsiDocComment docComment = method.getDocComment();
         if (docComment != null) {
@@ -237,6 +206,7 @@ public class InterfaceParser {
         }
         return "";
     }
+
     private static String getJavaDocComment(PsiField field) {
         PsiDocComment docComment = field.getDocComment();
         if (docComment != null) {
@@ -250,14 +220,16 @@ public class InterfaceParser {
         return "";
     }
 
-    private static ApiField createField(String name, String type, String description, String version) {
+    private static ApiField createField(String name,String chName, String type, String description, String version) {
         ApiField field = new ApiField();
         field.setName(name);
+        field.setCnName(chName);
         field.setType(getSimpleTypeName(type));
         field.setDescription(description);
         field.setVersion(version);
         return field;
     }
+
     private static String getSimpleTypeName(String fullTypeName) {
         // 如果是基本类型或没有包名，直接返回
         if (!fullTypeName.contains(".")) {
@@ -266,6 +238,7 @@ public class InterfaceParser {
         // 提取简单类名
         return fullTypeName.substring(fullTypeName.lastIndexOf('.') + 1);
     }
+
     private static List<ApiParameter> parseParameters(PsiMethod method) {
         List<ApiParameter> parameters = new ArrayList<>();
         PsiParameterList parameterList = method.getParameterList();
@@ -275,9 +248,10 @@ public class InterfaceParser {
 
             // 设置参数基本信息
             apiParameter.setName(parameter.getName());
+            apiParameter.setCnName(getParameterDescription(method, parameter));
             apiParameter.setType(getSimpleTypeName(parameter.getType().getCanonicalText()));
             apiParameter.setRequired(isParameterRequired(parameter)); // 是否必填
-            apiParameter.setDescription(getParameterDescription(method, parameter)); // 参数描述
+            apiParameter.setDescription(""); // 参数描述
 
             // 如果是 @RequestBody 参数，解析实体类字段
             if (isRequestBodyParameter(parameter)) {
@@ -288,6 +262,7 @@ public class InterfaceParser {
         }
         return parameters;
     }
+
     private static boolean isParameterRequired(PsiParameter parameter) {
         // 检查是否有 @RequestParam 注解
         PsiAnnotation requestParam = parameter.getAnnotation("org.springframework.web.bind.annotation.RequestParam");
@@ -320,7 +295,7 @@ public class InterfaceParser {
         }
 
         // 3. 返回默认描述
-        return "无描述";
+        return "";
     }
 
     private static String getAnnotationValue(PsiParameter parameter, String annotationQualifiedName, String attributeName) {
@@ -351,9 +326,11 @@ public class InterfaceParser {
         }
         return "";
     }
+
     private static boolean isRequestBodyParameter(PsiParameter parameter) {
         return parameter.getAnnotation("org.springframework.web.bind.annotation.RequestBody") != null;
     }
+
     private static List<ApiParameter> parseEntityFields(PsiType type) {
         List<ApiParameter> subParameters = new ArrayList<>();
         PsiClass psiClass = PsiUtil.resolveClassInType(type);
@@ -362,6 +339,15 @@ public class InterfaceParser {
             for (PsiField field : psiClass.getFields()) {
                 ApiParameter subParameter = new ApiParameter();
                 subParameter.setName(field.getName());
+                subParameter.setCnName(getFieldDescription(field));
+                //字段上的注解只要是javax.validation.constraints开头的都是必填
+                for (PsiAnnotation annotation : field.getAnnotations()) {
+                    String qualifiedName = annotation.getQualifiedName();
+                    if (qualifiedName != null && qualifiedName.startsWith("javax.validation.constraints")) {
+                        subParameter.setRequired(true);
+                        break;
+                    }
+                }
                 subParameter.setType(getSimpleTypeName(field.getType().getCanonicalText()));
                 subParameter.setDescription(getFieldDescription(field));
 
@@ -376,6 +362,7 @@ public class InterfaceParser {
 
         return subParameters;
     }
+
     private static boolean isComplexType(PsiType type) {
         return !(type instanceof PsiPrimitiveType || type.getCanonicalText().startsWith("java.lang"));
     }
