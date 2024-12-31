@@ -2,6 +2,7 @@ package com.wk.plugin.apitoapidoc;
 
 import org.apache.poi.xwpf.usermodel.*;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,14 +11,9 @@ import java.util.List;
 public class WordExportFromTemplates {
     public static void exportToWord(ApiInterface apiInterface, String outputFilePath) {
         // 1. 首先尝试从资源文件夹读取
-        InputStream inputStream = WordExportFromTemplates.class.getResourceAsStream("/templates/开发设计文档模版.docx");
-
-        // 2. 如果没有找到，尝试从其他位置读取
+        InputStream inputStream = WordExportFromTemplates.class.getResourceAsStream("/META-INF/templates/开发设计文档模版.docx");
         if (inputStream == null) {
-            inputStream = WordExportFromTemplates.class.getResourceAsStream("/META-INF/templates/开发设计文档模版.docx");
-        }
-        if (inputStream == null) {
-            throw new RuntimeException("无法找到模板文件，请检查文件路径：/templates/开发设计文档模版.docx");
+            throw new RuntimeException("无法找到模板文件，请检查文件路径：/META-INF/templates/开发设计文档模版.docx");
         }
 
         // 使用 Apache POI 读取 .docx 文件
@@ -27,12 +23,17 @@ public class WordExportFromTemplates {
             document = new XWPFDocument(inputStream);
             // 替换段落中的占位符
             for (XWPFParagraph paragraph : document.getParagraphs()) {
-                for (XWPFRun run : paragraph.getRuns()) {
-                    String text = run.getText(0); // 获取文字内容
-                    if (text != null && text.contains("${API_DESCRIPTION}")) {
-                        text = text.replace("${API_DESCRIPTION}", apiInterface.getDescription());
-                        run.setText(text, 0); // 设置新的文字内容
+                // 获取段落的完整文本
+                String paragraphText = paragraph.getText();
+                if (paragraphText.contains("${API_DESCRIPTION}")) {
+                    // 清除段落中的所有运行
+                    for (int i = paragraph.getRuns().size() - 1; i >= 0; i--) {
+                        paragraph.removeRun(i);
                     }
+                    // 创建新的运行并设置替换后的文本
+                    XWPFRun newRun = paragraph.createRun();
+                    newRun.setText(paragraphText.replace("${API_DESCRIPTION}", apiInterface.getDescription()));
+                    System.out.println("替换接口描述: " + apiInterface.getDescription());
                 }
             }
             // 获取所有表格
@@ -66,8 +67,29 @@ public class WordExportFromTemplates {
                     }
                 }
             }
-            out = new FileOutputStream("开发文档-测试.docx");
+                        // 确保输出目录存在
+            File outputFile = new File(outputFilePath);
+            File parentDir = outputFile.getParentFile();
+            if (!parentDir.exists()) {
+                boolean created = parentDir.mkdirs();
+                if (!created) {
+                    throw new RuntimeException("无法创建目录：" + parentDir.getAbsolutePath());
+                }
+            }
+            
+            // 写入文件
+            System.out.println("正在写入文件...");
+            out = new FileOutputStream(outputFile);
             document.write(out);
+            out.flush();
+            
+            // 验证文件是否创建成功
+            if (!outputFile.exists()) {
+                throw new RuntimeException("文件未能成功创建");
+            }
+            
+            System.out.println("文件大小: " + outputFile.length() + " bytes");
+            System.out.println("文档生成完成！");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }finally {
