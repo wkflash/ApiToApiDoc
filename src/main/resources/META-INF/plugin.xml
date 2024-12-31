@@ -29,12 +29,10 @@
     </extensions>
     <depends>com.intellij.modules.java</depends>
     <actions>
-<!--        <action id="myplugin.api2apidoc" class="com.wk.plugin.actions.GenerateDocAction" text="生成接口文档"-->
-<!--                description="生成接口文档">-->
-<!--            <add-to-group group-id="EditorPopupMenu" anchor="first"/>-->
-<!--        </action>-->
-        <action id="myAction.rightMenu" class="com.wk.plugin.actions.GenerateDocActionTest" text="右键菜单测试"
-                description="右键菜单测试">
+        <action id="myAction.rightMenu" 
+                class="com.wk.plugin.actions.GenerateDocAction"
+                text="生成接口文档" 
+                description="生成当前方法的接口文档">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
         </action>
     </actions>

@@ -1,28 +1,109 @@
 package com.wk.plugin.actions;
 
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.fileChooser.FileChooser;
+import com.intellij.openapi.fileChooser.FileChooserDescriptor;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.psi.*;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiMethod;
+import com.wk.plugin.apitoapidoc.ApiInterface;
+import com.wk.plugin.apitoapidoc.InterfaceParser;
+import com.wk.plugin.apitoapidoc.WordExportFromTemplates;
+
+import java.io.File;
+import java.io.IOException;
 
 public class GenerateDocAction extends AnAction {
 
-    @Override
-    public void actionPerformed(AnActionEvent e) {
-        // 获取当前编辑器中的 PsiMethod
+@Override
+public void actionPerformed(AnActionEvent e) {
+    try {
+        // 获取当前方法
         PsiMethod method = getPsiMethodFromContext(e);
         if (method == null) {
             Messages.showMessageDialog("请选择一个接口方法！", "提示", Messages.getInformationIcon());
             return;
         }
 
-        // 解析接口信息
-        String methodName = method.getName();
-        String returnType = method.getReturnType() != null ? method.getReturnType().getCanonicalText() : "void";
-        String message = "方法名: " + methodName + "\n返回类型: " + returnType;
+        // 获取项目
+        Project project = e.getProject();
+        if (project == null) {
+            Messages.showErrorDialog("无法获取项目信息", "错误");
+            return;
+        }
 
-        // 显示接口信息
-        Messages.showMessageDialog(message, "接口信息", Messages.getInformationIcon());
+        // 创建文件选择器
+        FileChooserDescriptor descriptor = new FileChooserDescriptor(false, true, 
+                false, false, false, false)
+                .withTitle("选择保存位置")
+                .withDescription("请选择接口文档保存位置");
+
+        // 默认打开桌面目录
+        String userHome = System.getProperty("user.home");
+        String desktopPath = userHome + File.separator + "Desktop";
+        File desktopDir = new File(desktopPath);
+        VirtualFile defaultDir = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(desktopDir);
+        
+        if (defaultDir == null) {
+            // 如果找不到桌面目录，就使用项目目录
+            defaultDir = project.getBaseDir();
+        }
+        
+        // 显示文件选择对话框
+        VirtualFile selectedDir = FileChooser.chooseFile(descriptor, project, defaultDir);
+        
+        if (selectedDir != null) {
+            // 生成文件名
+            PsiClass containingClass = method.getContainingClass();
+            String className = containingClass != null ? containingClass.getName() : "Unknown";
+            String methodName = method.getName();
+            String fileName = String.format("%s_%s_接口文档.docx", className, methodName);
+            
+            // 构建完整的输出路径
+            File outputFile = new File(selectedDir.getPath(), fileName);
+            String outputPath = outputFile.getAbsolutePath();
+
+            // 解析接口信息
+            ApiInterface apiInterface = InterfaceParser.parseMethod(containingClass, method);
+
+            // 导出文档
+            WordExportFromTemplates.exportToWord(apiInterface, outputPath);
+
+            // 刷新目录，确保文件在IDE中可见
+            selectedDir.refresh(false, false);
+
+            // 显示成功消息并询问是否打开文件夹
+            int response = Messages.showYesNoDialog(
+                String.format("文档生成成功！\n\n文件位置：\n%s\n\n是否打开所在文件夹？", outputPath),
+                "提示",
+                Messages.getQuestionIcon()
+            );
+            
+            // 如果用户选择打开文件夹
+            if (response == Messages.YES) {
+                try {
+                    Runtime.getRuntime().exec("explorer.exe /select," + outputPath);
+                } catch (IOException ex) {
+                    Messages.showErrorDialog("无法打开文件夹：" + ex.getMessage(), "错误");
+                }
+            }
+            
+            // 打印日志
+            System.out.println("文档已生成到：" + outputPath);
+        }
+    } catch (Exception ex) {
+        // 显示详细错误信息
+        String errorMessage = String.format("生成文档失败：\n%s", ex.getMessage());
+        Messages.showErrorDialog(errorMessage, "错误");
+        ex.printStackTrace();
     }
+}
 
     @Override
     public void update(AnActionEvent e) {

@@ -14,7 +14,8 @@ repositories {
 }
 
 intellij {
-    localPath.set("/Applications/IntelliJ IDEA.app/Contents")
+    //localPath.set("/Applications/IntelliJ IDEA.app/Contents")
+    localPath.set("D:\\Development Tools\\IntelliJ IDEA 2023.3.8")
 
     plugins.set(listOf("java"))
 }
@@ -26,9 +27,20 @@ dependencies {
 
 
 tasks {
+    processResources {
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        from("src/main/resources") {
+            include("**/*")
+        }
+        // 设置资源文件编码
+        charset("UTF-8")
+    }
     withType<JavaCompile> {
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
+        options.apply {
+            encoding = "UTF-8"
+            sourceCompatibility = "17"
+            targetCompatibility = "17"
+        }
     }
     patchPluginXml {
         sinceBuild.set("231")
@@ -44,4 +56,5 @@ tasks {
     publishPlugin {
         token.set(System.getenv("PUBLISH_TOKEN"))
     }
+
 }

@@ -1,9 +1,7 @@
 package com.wk.plugin.apitoapidoc;
 
-import com.sun.tools.javac.Main;
 import org.apache.poi.xwpf.usermodel.*;
 
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,10 +9,15 @@ import java.util.List;
 
 public class WordExportFromTemplates {
     public static void exportToWord(ApiInterface apiInterface, String outputFilePath) {
-        ClassLoader classLoader = WordExportFromTemplates.class.getClassLoader();
-        InputStream inputStream = classLoader.getResourceAsStream("templates/开发设计文档模版.docx");
+        // 1. 首先尝试从资源文件夹读取
+        InputStream inputStream = WordExportFromTemplates.class.getResourceAsStream("/templates/开发设计文档模版.docx");
+
+        // 2. 如果没有找到，尝试从其他位置读取
         if (inputStream == null) {
-            throw new RuntimeException("文件未找到，请检查路径是否正确！");
+            inputStream = WordExportFromTemplates.class.getResourceAsStream("/META-INF/templates/开发设计文档模版.docx");
+        }
+        if (inputStream == null) {
+            throw new RuntimeException("无法找到模板文件，请检查文件路径：/templates/开发设计文档模版.docx");
         }
 
         // 使用 Apache POI 读取 .docx 文件

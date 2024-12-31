@@ -5,11 +5,7 @@ import com.intellij.psi.*;
 import com.intellij.psi.javadoc.PsiDocComment;
 import com.intellij.psi.javadoc.PsiDocTag;
 import com.intellij.psi.util.PsiUtil;
-import com.sun.tools.javac.Main;
-import org.apache.poi.xwpf.usermodel.XWPFDocument;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -95,6 +91,7 @@ public class InterfaceParser {
                 } else if (methodText.contains("RequestMethod.DELETE")) {
                     return "DELETE";
                 } else if (methodText.contains("RequestMethod.PATCH")) {
+
                     return "PATCH";
                 }
             }
@@ -157,23 +154,6 @@ public class InterfaceParser {
         }
     }
 
- /*   public static  List<ApiParameter> parseParameters(PsiMethod method) {
-        List<ApiParameter> parameters = new ArrayList<>();
-        for (PsiParameter parameter : method.getParameterList().getParameters()) {
-            ApiParameter apiParameter = new ApiParameter();
-            apiParameter.setName(parameter.getName());
-            apiParameter.setType(parameter.getType().getCanonicalText());
-
-            // 根据注释或注解提取描述
-            PsiAnnotation requestParam = parameter.getAnnotation("org.springframework.web.bind.annotation.RequestParam");
-            if (requestParam != null) {
-                apiParameter.setRequired(getAnnotationValue(requestParam, "required").equalsIgnoreCase("true"));
-            }
-            parameters.add(apiParameter);
-        }
-        return parameters;
-    }*/
-
     private static List<ApiField> parseReturnType(PsiType returnType) {
         List<ApiField> fields = new ArrayList<>();
         if (returnType == null) {
@@ -212,6 +192,10 @@ public class InterfaceParser {
     private static List<ApiField> parseFieldsFromClass(PsiClass psiClass) {
         List<ApiField> fields = new ArrayList<>();
         for (PsiField field : psiClass.getFields()) {
+            // 跳过常量字段
+            if (field.hasModifierProperty(PsiModifier.STATIC) && field.hasModifierProperty(PsiModifier.FINAL)) {
+                continue;
+            }
             fields.add(createField(
                     field.getName(),
                     field.getType().getCanonicalText(),
@@ -246,7 +230,8 @@ public class InterfaceParser {
         if (docComment != null) {
             StringBuilder commentText = new StringBuilder();
             for (PsiElement descriptionElement : docComment.getDescriptionElements()) {
-                commentText.append(descriptionElement.getText());
+                String text = descriptionElement.getText();
+                commentText.append(text);
             }
             return commentText.toString().trim();
         }
@@ -257,7 +242,8 @@ public class InterfaceParser {
         if (docComment != null) {
             StringBuilder commentText = new StringBuilder();
             for (PsiElement descriptionElement : docComment.getDescriptionElements()) {
-                commentText.append(descriptionElement.getText());
+                String text = descriptionElement.getText();
+                commentText.append(text);
             }
             return commentText.toString().trim();
         }
@@ -356,7 +342,8 @@ public class InterfaceParser {
                 if (dataElements.length > 0 && dataElements[0].getText().equals(parameterName)) {
                     StringBuilder commentText = new StringBuilder();
                     for (int i = 1; i < dataElements.length; i++) {
-                        commentText.append(dataElements[i].getText());
+                        String text = dataElements[i].getText();
+                        commentText.append(text);
                     }
                     return commentText.toString().trim();
                 }
