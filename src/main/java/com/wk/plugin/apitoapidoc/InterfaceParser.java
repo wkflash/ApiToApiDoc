@@ -223,7 +223,7 @@ public class InterfaceParser {
             return javadocDescription;
         }
 
-        return "字段描述";
+        return "";
     }
     private static String getMethodJavaDocComment(PsiMethod method) {
         PsiDocComment docComment = method.getDocComment();

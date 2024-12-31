@@ -46,13 +46,7 @@ public class GenerateDocAction extends AnAction {
                     .withDescription("请选择接口文档保存位置");
 
             // 获取默认目录（桌面）
-            String userHome = System.getProperty("user.home");
-            String desktopPath = userHome + File.separator + "Desktop";
-            // macOS 的特殊处理
-            if (!new File(desktopPath).exists() && System.getProperty("os.name").toLowerCase().contains("mac")) {
-                desktopPath = userHome + File.separator + "Desktop";
-            }
-            
+            String desktopPath = System.getProperty("user.home") + File.separator + "Desktop";
             File desktopDir = new File(desktopPath);
             VirtualFile defaultDir = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(desktopDir);
             
