@@ -93,11 +93,19 @@ public class WordExportFromTemplates {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }finally {
-            try {
-                document.close();
-                out.close();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            if (out != null){
+                try {
+                    out.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            if (document != null) {
+                try {
+                    document.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
     }
